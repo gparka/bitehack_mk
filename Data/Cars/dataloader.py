@@ -3,29 +3,26 @@ import yaml
 from yaml.loader import SafeLoader
 
 class CarsData:
-  def get_dataloader(self):
-    self.df = pd.read_csv('.\Data\Cars\Cars.csv').drop(['Unnamed: 0'], axis = 1)
+  def get_dataloader(self, download = False, save = False):
+    if download:
+      path = "http://co2cars.apps.eea.europa.eu/tools/download?download_query=http%3A%2F%2Fco2cars.apps.eea.europa.eu%2F%3Fsource%3D%7B%22track_total_hits%22%3Atrue%2C%22query%22%3A%7B%22bool%22%3A%7B%22must%22%3A%5B%7B%22constant_score%22%3A%7B%22filter%22%3A%7B%22bool%22%3A%7B%22must%22%3A%5B%7B%22bool%22%3A%7B%22should%22%3A%5B%7B%22term%22%3A%7B%22year%22%3A2021%7D%7D%5D%7D%7D%2C%7B%22bool%22%3A%7B%22should%22%3A%5B%7B%22term%22%3A%7B%22scStatus%22%3A%22Provisional%22%7D%7D%5D%7D%7D%5D%7D%7D%7D%7D%5D%7D%7D%2C%22display_type%22%3A%22tabular%22%7D&download_format=csv"
+    else:
+      path = '.\..\Datasets\Cars.csv'
+    self.df = pd.read_csv(path).drop(['ID', 'VFN', 'Mp', 'Man',
+              'MMS', 'T', 'Va', 'Ve', 'Cn', 'Ct', 'Cr', 'At1 (mm)', 'At2 (mm)', 
+              'IT', 'Vf', 'year'], axis = 1)
     self.keys = self.df.keys()
     self.row_list = []
     self.normalize_vals = []
-    #print(self.df)
     for col_name in self.keys:
       if self.df[col_name].dtype == 'object':
-        if col_name == 'Mh':
+        if col_name == 'Mk':
           with open('.\\resources\car_manufacturrers.yml') as f:
             data = yaml.load(f, Loader=SafeLoader)
             data = [x.upper() for x in data]
             n = len(col_vals)
             vals = list(range(1, n+1))
             di = dict(zip(data, vals))
-            #print(di)
-            new_col = []
-            for el in data:
-              for idx, val in enumerate(self.df[col_name]):
-                if el in val:
-                  #self.df[col_name][idx] = el
-                  new_col.append(el)
-            self.df[col_name] = new_col
             self.df[col_name] = self.df[col_name].map(di).fillna(0)
         else: 
           col_vals = list(self.df[col_name].unique())
@@ -41,11 +38,10 @@ class CarsData:
         self.df[col_name] = self.df[col_name] / m 
       self.norm_mean_std.append(m)
 
-    print(self.df)
-
     for _, row in self.df.iterrows():
       self.row_list.append(row.to_list())
-    return self.row_list
 
-d = CarsData()
-d.get_dataloader()
+    if save:
+      self.df.to_csv('.\\resources\cleanData.csv')
+
+    return self.row_list
