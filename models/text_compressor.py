@@ -1,15 +1,7 @@
 import torch
 from torch import nn
-
-
-class TextPreprocessor:
-    def __init__(self, max_window):
-        self.max_window = max_window
-
-    def prepare(self, sentence: str) -> torch.Tensor:
-        compressed = torch.zeros(self.max_window, dtype=torch.float)
-        for i, letter in enumerate(sentence):
-            compressed[i] = float(ord(letter))
+import yaml
+from yaml.loader import SafeLoader
 
 
 class TextCompressor(nn.Module):
