@@ -80,12 +80,12 @@ class ImgDataset(Dataset):
         if col_name != 'Img':
           m = self.df[col_name].max()
           if m != 0:
-            self.df[col_name] = self.df[col_name] / m 
+            self.df[col_name] = self.df[col_name] / m
           self.norm_reverse.append(m)
-    
+
     def __len__(self):
       return len(self.df)
-    
+
     def __getitem__(self, idx):
       if torch.is_tensor(idx):
         idx = idx.tolist()
@@ -103,7 +103,7 @@ def get_images():
 'Body Style']
   filenames = walk(".\\resources\Car_img")
   for dirpath, _, names in filenames:
-    img_params = [name.split('_')[:-1] for name in names] 
+    img_params = [name.split('_')[:-1] for name in names]
   df = pd.DataFrame(img_params, columns= keys)
   filenames = names
   imgs = []
@@ -111,7 +111,7 @@ def get_images():
     image = Image.open('.\\resources\Car_img\\' + name)
     imgs.append(transforms.ToTensor()(image))
     image.close()
-  
+
   for col_name in keys:
     if df[col_name].dtype == 'object':
       col_vals = list(df[col_name].unique())
