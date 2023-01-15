@@ -18,7 +18,7 @@ class CarsData:
         for col_name in self.keys:
             if self.df[col_name].dtype == 'object':
                 if col_name == 'Mk':
-                    with open('/home/sportv09/PycharmProjects/bitehack_mk/resources/cleanData.csv') as f:
+                    with open('/home/sportv09/PycharmProjects/bitehack_mk/resources/car_manufacturers.yml') as f:
                         data = yaml.load(f, Loader=SafeLoader)
                         data = [x.upper() for x in data]
                         n = len(col_vals)
