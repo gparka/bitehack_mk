@@ -72,7 +72,8 @@ def get_dataloader(data, batch_s, shuff = True, n_workers = 0):
   return DataLoader(data, batch_size = batch_s, shuffle = shuff, num_workers = n_workers)
 
 class ImgDataset(Dataset):
-    def __init__(self, df):
+    def __init__(self, df, filenames):
+      self.filenames = filenames
       self.df = df
       self.keys = self.df.keys()
       self.norm_reverse = [0]
@@ -89,12 +90,16 @@ class ImgDataset(Dataset):
     def __getitem__(self, idx):
       if torch.is_tensor(idx):
         idx = idx.tolist()
-      img = self.df.iloc[idx, 0]
-      #img = transforms.ToTensor()(img)
-      data = self.df.iloc[idx, 1:]
+      imgs = []
+      name = self.filenames[idx]
+      print(name)
+      image = Image.open('.\\resources\Car_img\\' + name)
+      imgs.append(transforms.ToTensor()(image))
+      image.close()
+      data = self.df.iloc[idx, :]
       data = np.asarray(data)
       data = torch.Tensor(data)
-      return (img, data)
+      return (imgs, data)
 
 def get_images():
   keys = ['Make', 'Model', 'Year', 'MSRP', 'Front Wheel Size (in)', 'SAE Net Horsepower @ RPM',
@@ -106,11 +111,6 @@ def get_images():
     img_params = [name.split('_')[:-1] for name in names] 
   df = pd.DataFrame(img_params, columns= keys)
   filenames = names
-  imgs = []
-  for name in filenames:
-    image = Image.open('.\\resources\Car_img\\' + name)
-    imgs.append(transforms.ToTensor()(image))
-    image.close()
   
   for col_name in keys:
     if df[col_name].dtype == 'object':
@@ -120,19 +120,13 @@ def get_images():
       di = dict(zip(col_vals, vals))
       df[col_name] = df[col_name].map(di).fillna(0)
   df.dropna()
-  df.insert(0, 'Img', imgs)
-  data = ImgDataset(df)
+  data = ImgDataset(df, filenames)
   return data
 
 if __name__ == "__main__":
     #cars = CarsData()
     #cars.get_data()
     cars_imgs = get_images()
-    for idx in range(3):
-      x, y = cars_imgs[idx]
-    cars_loader = get_dataloader(cars_imgs, 4)
-    for x, y in cars_loader:
-      print(x)
-      print(y)
-      break
+    cars_loader = get_dataloader(cars_imgs, 2)
+
 
